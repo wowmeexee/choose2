@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Простые решения</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;font-family:Arial, sans-serif}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#f4efe8;
+  padding:30px 0;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+  margin-bottom:28px;
+  width: min(420px, 90%);
+}
+.nav-btn{
+  flex: 1;
+  padding: 12px 18px;
+  border:2px solid #ddd;
+  border-radius:16px;
+  background:white;
+  font-size: 15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+  color:#aaa;
+  text-align: center;
+}
+.nav-btn.active{
+  background:#111;
+  color:white;
+  border-color:#111;
+}
+
+.page{ display:none; width:min(420px,90%); text-align:center; }
+.page.active{ display:block; }
+h1{ font-size:42px; margin:0 0 30px; font-weight:800; color:#111; }
+.card{
+  background:white;
+  border-radius:28px;
+  padding:35px;
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+/* === Страница 1 === */
+.option{
+  border:2px solid #eee;
+  border-radius:18px;
+  padding:20px;
+  margin:14px 0;
+  font-size:26px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+  user-select:none;
+}
+.option:hover{ transform:scale(1.03); }
+.option.active{ background:#111; color:white; border-color:#111; }
+
+#btn{
+  margin-top:25px; width:100%; padding:18px; border:0;
+  border-radius:16px; background:#111; color:white; font-size:20px;
+  cursor:pointer; opacity:.3; pointer-events:none; transition:.2s;
+}
+#btn.ready{ opacity:1; pointer-events:all; }
+#btn.hidden{ display:none; }
+
+.confirm-block{
+  display:none; margin-top:22px; background:#f9f6f1;
+  border-radius:20px; padding:24px 20px; text-align:left;
+}
+.confirm-block.show{ display:block; }
+.confirm-label{
+  font-size:13px; color:#aaa; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px;
+}
+.confirm-choice{ font-size:22px; font-weight:800; color:#111; margin-bottom:16px; }
+.confirm-verdict{
+  font-size:15px; color:#555; line-height:1.55;
+  border-left:3px solid #ddd; padding-left:12px;
+}
+.confirm-verdict strong{ display:block; font-size:18px; color:#111; margin-bottom:4px; }
+.actions{ display:flex; gap:10px; margin-top:18px; }
+.btn-cancel{
+  flex:1; padding:14px; font-size:16px; border-radius:14px;
+  background:#eee; color:#111; border:0; cursor:pointer;
+}
+.btn-save{
+  flex:1; padding:14px; font-size:16px; border-radius:14px;
+  background:#111; color:white; border:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+
+/* === Страница 2 === */
+.mann-desc{
+  font-size:15px; color:#888; margin:-10px 0 24px; line-height:1.5;
+}
+.mann-desc a{ color:#888; text-decoration:underline; text-underline-offset:3px; }
+
+.filter-row{ margin-bottom:18px; text-align:left; }
+.filter-name{ font-size:18px; font-weight:800; color:#111; margin-bottom:8px; }
+
+.filter-options{ display:flex; gap:6px; }
+.filter-opt{
+  flex:1;
+  border:2px solid #eee;
+  border-radius:14px;
+  padding:13px 4px;
+  text-align:center;
+  cursor:pointer;
+  transition:.2s;
+  font-size:14px;
+  font-weight:700;
+  color:#aaa;
+  user-select:none;
+  background:white;
+}
+.filter-opt:hover{ border-color:#ccc; color:#555; }
+.filter-opt.active{ background:#111; color:white; border-color:#111; }
+.filter-opt.middle{
+  border-style:dashed;
+  color:transparent;
+  font-size:1px;
+}
+.filter-opt.middle.active{
+  background:#111;
+  border-style:solid;
+}
+
+.mann-buttons{ display:flex; gap:8px; margin-top:22px; }
+
+#mannReset{
+  width:54px; flex-shrink:0; height:58px;
+  border:0; border-radius:16px;
+  background:#eee; color:#ccc;
+  font-size:22px; transition:.2s;
+  display:flex; align-items:center; justify-content:center;
+  cursor:default;
+}
+#mannReset.can-reset{ color:#111; cursor:pointer; }
+#mannReset.can-reset:hover{ background:#ddd; }
+
+#mannBtn{
+  flex:1; padding:18px; border:0; border-radius:16px;
+  background:#111; color:white; font-size:18px; font-weight:700;
+  cursor:pointer; opacity:.3; pointer-events:none; transition:.2s;
+}
+#mannBtn.ready{ opacity:1; pointer-events:all; }
+
+.mann-result{
+  display:none; margin-top:20px; border-radius:20px;
+  padding:22px 24px; text-align:center;
+}
+.mann-result.show{ display:block; }
+.mann-result.green{ background:#e8f5e9; }
+.mann-result.yellow{ background:#fff8e1; }
+.mann-result.red{ background:#fdecea; }
+.result-title{ font-size:22px; font-weight:800; color:#111; }
+
+.mann-footer{
+  margin-top:20px; font-size:13px; color:#bbb; text-align:center;
+}
+.mann-footer a{ color:#bbb; text-decoration:underline; text-underline-offset:3px; }
+
+#snapshot{
+  position:fixed; left:-9999px; top:-9999px; width:400px;
+  background:#f4efe8; border-radius:24px; padding:30px 28px;
+  text-align:left; font-family:Arial, sans-serif;
+}
+#snapshot .snap-title{
+  font-size:13px; color:#999; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;
+}
+#snapshot .snap-choice{ font-size:26px; font-weight:800; color:#111; margin-bottom:18px; }
+#snapshot .snap-verdict-title{ font-size:20px; font-weight:800; color:#111; margin-bottom:6px; }
+#snapshot .snap-verdict-text{
+  font-size:15px; color:#555; line-height:1.6;
+  border-left:3px solid #ccc; padding-left:12px;
+}
+#snapshot .snap-footer{ margin-top:20px; font-size:12px; color:#bbb; text-align:right; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('p1',this)">2 из 3</button>
+  <button class="nav-btn" onclick="showPage('p2',this)">Фильтры Манна</button>
+</div>
+
+<div class="page active" id="p1">
+  <h1>Выбери 2</h1>
+  <div class="card">
+    <div class="option">⚡ Быстро</div>
+    <div class="option">💸 Дёшево</div>
+    <div class="option">🎯 Качественно</div>
+    <button id="btn">Продолжить</button>
+    <div class="confirm-block" id="confirmBlock">
+      <div class="confirm-label">Ваш выбор</div>
+      <div class="confirm-choice" id="confirmChoice"></div>
+      <div class="confirm-verdict" id="confirmVerdict"></div>
+      <div class="actions">
+        <button class="btn-cancel" id="btnCancel">← Назад</button>
+        <button class="btn-save" id="btnSave">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1v9m0 0L5 7m3 3l3-3M1 12v1.5A1.5 1.5 0 0 0 2.5 15h11A1.5 1.5 0 0 0 15 13.5V12"
+              stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Сохранить
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="p2">
+  <h1>Фильтры Манна</h1>
+  <p class="mann-desc">Оцени идею по 4 критериям — делать или нет.<br>
+    Метод <a href="https://igor-mann.ru/" target="_blank">Игоря Манна</a>
+  </p>
+  <div class="card">
+
+    <div class="filter-row">
+      <div class="filter-name">⚡ Скорость</div>
+      <div class="filter-options">
+        <div class="filter-opt" data-filter="speed" data-val="3">Быстро</div>
+        <div class="filter-opt middle" data-filter="speed" data-val="2">&nbsp;</div>
+        <div class="filter-opt" data-filter="speed" data-val="1">Долго</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-name">🔧 Сложность</div>
+      <div class="filter-options">
+        <div class="filter-opt" data-filter="hard" data-val="3">Просто</div>
+        <div class="filter-opt middle" data-filter="hard" data-val="2">&nbsp;</div>
+        <div class="filter-opt" data-filter="hard" data-val="1">Сложно</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-name">💸 Стоимость</div>
+      <div class="filter-options">
+        <div class="filter-opt" data-filter="cost" data-val="3">Бесплатно</div>
+        <div class="filter-opt middle" data-filter="cost" data-val="2">&nbsp;</div>
+        <div class="filter-opt" data-filter="cost" data-val="1">Дорого</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-name">🎯 Эффект</div>
+      <div class="filter-options">
+        <div class="filter-opt" data-filter="effect" data-val="3">Есть</div>
+        <div class="filter-opt middle" data-filter="effect" data-val="2">&nbsp;</div>
+        <div class="filter-opt" data-filter="effect" data-val="1">Нет</div>
+      </div>
+    </div>
+
+    <div class="mann-buttons">
+      <button id="mannReset">↺</button>
+      <button id="mannBtn">Получить ответ</button>
+    </div>
+
+    <div class="mann-result" id="mannResult">
+      <div class="result-title" id="resultTitle"></div>
+    </div>
+
+    <div class="mann-footer">
+      <a href="http://xn--80aawmfhaurr5fj.xn--p1ai/" target="_blank">Оригинал</a>
+    </div>
+  </div>
+</div>
+
+<div id="snapshot">
+  <div class="snap-title">ваш выбор</div>
+  <div class="snap-choice" id="snapChoice"></div>
+  <div class="snap-verdict-title" id="snapTitle"></div>
+  <div class="snap-verdict-text" id="snapText"></div>
+  <div class="snap-footer">2 из 3</div>
+</div>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* — Страница 1 — */
+const ORDER = ["⚡ Быстро", "💸 Дёшево", "🎯 Качественно"];
+const VERDICTS = [
+  {
+    keys: ["⚡ Быстро", "💸 Дёшево"],
+    title: "Придётся жертвовать качеством",
+    text: "Быстро и дёшево — классический компромисс. Скорее всего, результат будет сырым: ошибки, доработки и разочарование не за горами."
+  },
+  {
+    keys: ["⚡ Быстро", "🎯 Качественно"],
+    title: "Готовьтесь платить",
+    text: "Быстро и качественно — это реально, но стоит дорого. Хорошие специалисты берут за срочность."
+  },
+  {
+    keys: ["💸 Дёшево", "🎯 Качественно"],
+    title: "Потребуется больше времени",
+    text: "Дёшево и качественно — не значит быстро. Хорошая работа по низкой стоимости требует оптимизации ресурсов и времени."
+  }
+];
+
+const options = document.querySelectorAll('.option');
+const btn = document.getElementById('btn');
+const confirmBlock = document.getElementById('confirmBlock');
+const confirmChoice = document.getElementById('confirmChoice');
+const confirmVerdict = document.getElementById('confirmVerdict');
+const btnCancel = document.getElementById('btnCancel');
+const btnSave = document.getElementById('btnSave');
+let selected = [], currentVerdict = null;
+
+options.forEach(option => {
+  option.onclick = () => {
+    const text = option.innerText.trim();
+    if(selected.includes(text)){
+      selected = selected.filter(x => x !== text);
+      option.classList.remove('active');
+    } else {
+      if(selected.length === 2){
+        const old = selected.shift();
+        [...options].find(o => o.innerText.trim() === old).classList.remove('active');
+      }
+      selected.push(text);
+      option.classList.add('active');
+    }
+    btn.classList.toggle('ready', selected.length === 2);
+    confirmBlock.classList.remove('show');
+    btn.classList.remove('hidden');
+  };
+});
+
+function sortedSelected() {
+  return [...selected].sort((a,b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+}
+
+btn.onclick = () => {
+  if(selected.length !== 2) return;
+  currentVerdict = VERDICTS.find(v => v.keys.every(k => selected.includes(k)));
+  const sorted = sortedSelected();
+  confirmChoice.textContent = sorted.join(' + ');
+  confirmVerdict.innerHTML = currentVerdict
+    ? `<strong>${currentVerdict.title}</strong>${currentVerdict.text}` : '';
+  confirmBlock.classList.add('show');
+  btn.classList.add('hidden');
+};
+
+btnCancel.onclick = () => {
+  confirmBlock.classList.remove('show');
+  btn.classList.remove('hidden');
+};
+
+btnSave.onclick = async () => {
+  if(!currentVerdict) return;
+  const sorted = sortedSelected();
+  document.getElementById('snapChoice').textContent = sorted.join(' + ');
+  document.getElementById('snapTitle').textContent = currentVerdict.title;
+  document.getElementById('snapText').textContent = currentVerdict.text;
+  const snap = document.getElementById('snapshot');
+  snap.style.top = '0';
+  const canvas = await html2canvas(snap, { scale:3, backgroundColor:null, useCORS:true });
+  snap.style.top = '-9999px';
+  const link = document.createElement('a');
+  link.download = 'ваш-выбор.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+};
+
+/* — Страница 2 — */
+const FILTERS = ['speed', 'hard', 'cost', 'effect'];
+const mannScores = { speed: 2, hard: 2, cost: 2, effect: 2 };
+const mannBtn = document.getElementById('mannBtn');
+const mannReset = document.getElementById('mannReset');
+const mannResult = document.getElementById('mannResult');
+
+function setDefaults() {
+  FILTERS.forEach(filter => {
+    mannScores[filter] = 2;
+    document.querySelectorAll(`.filter-opt[data-filter="${filter}"]`)
+      .forEach(o => o.classList.remove('active'));
+    const mid = document.querySelector(`.filter-opt.middle[data-filter="${filter}"]`);
+    if(mid) mid.classList.add('active');
+  });
+  mannResult.classList.remove('show');
+  mannBtn.classList.add('ready');
+  updateResetBtn();
+}
+
+function updateResetBtn() {
+  const anyChanged = Object.values(mannScores).some(v => v !== 2);
+  mannReset.classList.toggle('can-reset', anyChanged);
+}
+
+document.querySelectorAll('.filter-opt').forEach(opt => {
+  opt.onclick = () => {
+    const filter = opt.dataset.filter;
+    const val = parseInt(opt.dataset.val);
+    document.querySelectorAll(`.filter-opt[data-filter="${filter}"]`)
+      .forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    mannScores[filter] = val;
+    mannBtn.classList.add('ready');
+    mannResult.classList.remove('show');
+    updateResetBtn();
+  };
+});
+
+mannBtn.onclick = () => {
+  const e = mannScores.effect; // 3=Есть, 2=середина, 1=Нет
+  const s = mannScores.speed;  // 3=Быстро, 2=середина, 1=Долго
+  const h = mannScores.hard;   // 3=Просто, 2=середина, 1=Сложно
+  const c = mannScores.cost;   // 3=Бесплатно, 2=середина, 1=Дорого
+
+  let cls, title;
+
+  // Проверка кастомных условий:
+  if (e === 3 && h === 2 && c === 1 && s === 2) {
+    // Сложность: средняя (2), Стоимость: дорого (1), Скорость: средняя (2), Эффект: есть (3)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (e === 3 && c === 1 && h === 2 && s === 1) {
+    // Эффект: есть (3), Стоимость: дорого (1), Сложность: средняя (2), Скорость: долго (1)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (e === 3 && c === 2 && h === 1 && s === 2) {
+    // Эффект: есть (3), Стоимость: средняя (2), Сложность: сложно (1), Скорость: средняя (2)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (e === 3 && h === 1 && c === 1 && s === 2) {
+    // Сложность: сложно (1), Стоимость: дорого (1), Скорость: средняя (2), Эффект: есть (3)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (e === 3 && s === 1 && h === 2 && c === 2) {
+    // Скорость: долго (1), Сложность: средне (2), Стоимость: средне (2), Эффект: есть (3)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (s === 1 && c === 1 && h === 2 && e === 2) {
+    // Скорость: долго (1), Стоимость: дорого (1), Сложность: средне (2), Эффект: средне (2)
+    cls = 'yellow'; title = 'Подумай еще!';
+  } else if (h === 1 && s === 1 && c === 2 && e === 2) {
+    // Сложность: сложно (1), Скорость: долго (1), Стоимость: средне (2), Эффект: средне (2)
+    cls = 'red'; title = 'Даже не думай!';
+  }
+  // Стандартная ветка логики:
+  else if (e === 1) {
+    if (s === 3 && h === 3 && c === 3) {
+      cls = 'yellow'; title = 'Подумай еще!';
+    } else {
+      cls = 'red'; title = 'Даже не думай!';
+    }
+  } else if (e === 3) {
+    if (s === 1 && h === 1 && c === 1) {
+      cls = 'yellow'; title = 'Подумай еще!';
+    } else if (s === 1 && h === 1) {
+      cls = 'yellow'; title = 'Подумай еще!';
+    } else {
+      cls = 'green'; title = 'Действуй!';
+    }
+  } else {
+    if (s === 3 && h === 3 && c === 3) {
+      cls = 'green'; title = 'Действуй!';
+    } else if (s === 1 && c === 1) {
+      cls = 'red'; title = 'Даже не думай!';
+    } else if (s === 1 && h === 1 && c === 1) {
+      cls = 'red'; title = 'Даже не думай!';
+    } else {
+      cls = 'yellow'; title = 'Подумай еще!';
+    }
+  }
+
+  document.getElementById('resultTitle').textContent = title;
+  mannResult.className = `mann-result show ${cls}`;
+};
+
+mannReset.onclick = () => {
+  if(!mannReset.classList.contains('can-reset')) return;
+  setDefaults();
+};
+
+setDefaults();
+</script>
+</body>
+</html>
